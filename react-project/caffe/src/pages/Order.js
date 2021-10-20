@@ -1,53 +1,64 @@
-import React, { useState } from 'react';
+import React, { Fragment, useState, useMemo } from 'react';
 
 const formatter = Intl.NumberFormat( 'ko-KR' );
 function Order() {
-    const [hasEspresso, setEspresso] = useState(false);
-    const [hasAmericano, setAmericano] = useState(false);
-    const [hasLatte, setLatte] = useState(false);
+    const [ selected, setSelected ] = useState( [] );
 
-    let sum = 0;
-    sum += hasEspresso ? 2800 : 0;
-    sum += hasAmericano ? 3500 : 0;
-    sum += hasLatte ? 4500 : 0;
+
+    const sum = useMemo(() => {
+            let value = 0;
+            selected.forEach(item => value += item.price)
+            return value;
+        }, [ selected ])
+
+
+
+    const data = [
+        {name:'에스프레소', price:2800},
+        {name:'아메리카노', price:3000},
+        {name:'카페라떼', price:3500},
+        {name:'카페모카', price:3800}
+    ]
+
+    const onClick = element => {
+        //console.log(selected.some(item => item.name === element.name))
+        if( selected.some(item => item.name === element.name)) {
+            setSelected(selected.filter(
+                (item) => item.name !== element.name
+            ))
+        }
+        else
+        {                                      
+            setSelected([...selected, element])
+        }
+    }    
 
     return (
         <div className="Container">
             <h1 className="font-bold">Order</h1>
             <dl>
-                <dt>에스프레소</dt>
-                <dd>2,800원
-                    <small>
-                        <button className='btn-xs btn-outline-primary' onClick={ () => {setEspresso(!hasEspresso)} }>
-                            [{ hasEspresso ? '선택 해제' : '선택' }]
-                        </button>
-                    </small>
-                </dd>
-                <dt>아메리카노</dt>
-                <dd>
-                    3,500원
-                    <small>
-                        <button className='btn-xs btn-outline-primary' onClick={ () => {setAmericano(!hasAmericano)} }>
-                            [{ hasAmericano ? '선택 해제' : '선택' }]
-                        </button>
-                    </small>
-                </dd>
-                <dt>카페라떼</dt>
-                <dd>
-                    4,500원
-                    <small>
-                        <button className='btn-xs btn-outline-primary' onClick={ () => {setLatte(!hasLatte)} }>
-                            [{ hasLatte ? '선택 해제' : '선택' }]
-                        </button>
-                    </small>
-                </dd>
+                {
+                data.map(element => {
+                    return (
+                        <Fragment key={element.name}>
+                            <dt>{ element.name }</dt>
+                            <dd>
+                                { formatter.format(element.price) }원
+                                <small>
+                                    <button onClick={ () => onClick(element) }>
+                                        [{ selected.some(item => item.name === element.name) ? '선택 해제':'선택' }]
+                                    </button>
+                                </small>
+                            </dd>
+                        </Fragment>
+                    )
+                })
+            }
             </dl>
             <hr />
             <h3 className="text-xl font-bold">주문서</h3>
                 <ul className="list-unstyled">
-                    { hasEspresso && <li>에스프레소</li>}
-                    { hasAmericano && <li>아메리카노</li>}
-                    { hasLatte && <li>카페라떼</li>}
+                    { selected.map( item => <li key={ item.name }>{ item.name }</li> ) }
                 </ul>
                 합계: { formatter.format(sum) }원
             <div>
